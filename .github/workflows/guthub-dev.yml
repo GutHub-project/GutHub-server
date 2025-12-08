@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: development
+    environment: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
   docker-push:
 
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     environment: dev
 
@@ -69,7 +69,7 @@ jobs:
 
     needs: docker-push
     runs-on: ubuntu-latest
-    environment: development
+    environment: dev
 
     steps:
       - name: Deploy to AWS EC2
@@ -82,7 +82,7 @@ jobs:
 
           script: |
             
-            docker pull moset1/:${{ github.sha }}
+            docker pull moset1/guthub-server:${{ github.sha }}
 
             docker stop guthub-server || true
             docker rm guthub-server || true
