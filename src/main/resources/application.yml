@@ -50,3 +50,5 @@ jwt:
   secret:
     key: ${JWT_SECRET_KEY}
 
+backend:
+  url: "http://${SERVER_DOMAIN}"

@@ -20,12 +20,12 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final JWTUtil jwtUtil;
-    private final String frontendUrl;
+    private final String backendUrl;
 
-    public SocialSuccessHandler(JwtService jwtService, JWTUtil jwtUtil, @Value("${frontend.url}") String frontendUrl) {
+    public SocialSuccessHandler(JwtService jwtService, JWTUtil jwtUtil, @Value("${backend.url}") String backendUrl) {
         this.jwtService = jwtService;
         this.jwtUtil = jwtUtil;
-        this.frontendUrl = frontendUrl;
+        this.backendUrl = backendUrl;
     }
 
     @Override
@@ -46,10 +46,10 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         // Refresh Token을 HttpOnly 쿠키로 설정
         CookieUtil.addRefreshTokenCookie(response, refreshToken);
 
-        // 프론트엔드의 소셜 로그인 성공 처리 페이지로 리디렉션
-        String redirectUrl =  frontendUrl.endsWith("/")
-                ? frontendUrl + "login/success"
-                : frontendUrl + "/login/success";
+
+        String redirectUrl =  backendUrl.endsWith("/")
+                ? backendUrl + "jwt/refresh"
+                : backendUrl + "/jwt/refresh";
 
         response.sendRedirect(redirectUrl);
 
