@@ -102,18 +102,12 @@ public class SecurityConfig {
                         "/user/exist",
                         "/jwt/refresh",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/secured-test"
+                        "/v3/api-docs/**"
 
                 ).permitAll()
                 .anyRequest().authenticated()
         );
 
-
-
-        http.headers(headers -> headers
-                .frameOptions(frame -> frame.disable())   // H2 콘솔에서 iframe 허용
-        );
 
         http.sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

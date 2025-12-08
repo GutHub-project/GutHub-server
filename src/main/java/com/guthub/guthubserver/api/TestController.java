@@ -12,4 +12,9 @@ public class TestController {
         return ResponseEntity.ok("login success");
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("test success");
+    }
+
 }

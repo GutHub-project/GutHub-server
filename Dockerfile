@@ -2,6 +2,9 @@
 FROM eclipse-temurin:25 AS build
 WORKDIR /app
 COPY . .
+
+RUN chmod +x gradlew
+
 RUN ./gradlew clean bootJar -x test
 
 # runtime stage

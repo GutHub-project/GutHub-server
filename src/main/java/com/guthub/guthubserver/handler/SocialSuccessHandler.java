@@ -22,6 +22,7 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
     private final String frontendUrl;
 
+
     public SocialSuccessHandler(JwtService jwtService, JWTUtil jwtUtil, @Value("${frontend.url}") String frontendUrl) {
         this.jwtService = jwtService;
         this.jwtUtil = jwtUtil;
@@ -34,10 +35,8 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         String username = authentication.getName();
         String role = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .filter(r -> r.startsWith("ROLE_"))
                 .findFirst()
                 .orElse("ROLE_USER");
-
 
         String refreshToken = jwtUtil.createJWT(username, role, false);
 
@@ -46,12 +45,11 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         // Refresh Token을 HttpOnly 쿠키로 설정
         CookieUtil.addRefreshTokenCookie(response, refreshToken);
 
-        // 프론트엔드의 소셜 로그인 성공 처리 페이지로 리디렉션
+
         String redirectUrl = frontendUrl.endsWith("/")
                 ? frontendUrl + "login/success"
                 : frontendUrl + "/login/success";
 
         response.sendRedirect(redirectUrl);
-
     }
 }

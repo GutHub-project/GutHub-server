@@ -1,19 +1,18 @@
 name: guthub-dev.yml
+
 on:
   push:
-    branches: ["dev"]
-    paths:
-      - 'Guthub-server/**'
+    branches:
+      - dev
 
   pull_request:
-    branches: ["dev"]
-    paths:
-      - 'Guthub-server/**'
+    branches:
+      - dev
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: development
+    environment: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,19 +24,21 @@ jobs:
           distribution: 'temurin'
 
       - name: Grant execute permission for gradlew
-        run: chmod +x .gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: guthub-server-jar
-          path: Guthub-server/build/libs/*.jar
+          path: build/libs/*.jar   # 🔥 FIXED
 
 
   docker-push:
-
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     environment: dev
 
@@ -49,7 +50,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: guthub-server-jar
-          path: Guthub-server/build/libs/
+          path: build/libs/   # 🔥 FIXED
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -60,16 +61,15 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./Guthub-server
+          context: .   # 🔥 FIXED: repo root 기준
           push: true
           tags: moset1/guthub-server:${{ github.sha }}
 
 
   deploy:
-
     needs: docker-push
     runs-on: ubuntu-latest
-    environment: development
+    environment: dev
 
     steps:
       - name: Deploy to AWS EC2
@@ -81,8 +81,8 @@ jobs:
           port: 22
 
           script: |
-            
-            docker pull moset1/:${{ github.sha }}
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            docker pull moset1/guthub-server:${{ github.sha }}
 
             docker stop guthub-server || true
             docker rm guthub-server || true
@@ -93,7 +93,7 @@ jobs:
             -e "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
             -e "FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}" \
             \
-            -e "SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}:3306/users?serverTimezone=Asia/Seoul&characterEncoding=UTF-8" \
+            -e "SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}:3306/guthub?serverTimezone=Asia/Seoul&characterEncoding=UTF-8" \
             -e "SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}" \
             -e "SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}" \
             \
@@ -102,9 +102,10 @@ jobs:
             \
             -e "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" \
             -e "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" \
-            
+            \
+            -e "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" \
+            -e "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" \
             \
             moset1/guthub-server:${{ github.sha }}
 
-            # 5. 불필요한 이미지 정리
             docker image prune -f
