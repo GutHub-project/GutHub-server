@@ -22,7 +22,7 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
     private final String frontendUrl;
 
-    // 다시 frontend.url을 주입받도록 수정합니다.
+
     public SocialSuccessHandler(JwtService jwtService, JWTUtil jwtUtil, @Value("${frontend.url}") String frontendUrl) {
         this.jwtService = jwtService;
         this.jwtUtil = jwtUtil;
@@ -45,7 +45,7 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         // Refresh Token을 HttpOnly 쿠키로 설정
         CookieUtil.addRefreshTokenCookie(response, refreshToken);
 
-        // 최종 목적지는 프론트엔드의 특정 페이지여야 합니다.
+
         String redirectUrl = frontendUrl.endsWith("/")
                 ? frontendUrl + "login/success"
                 : frontendUrl + "/login/success";
