@@ -20,12 +20,13 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final JWTUtil jwtUtil;
-    private final String backendUrl;
+    private final String frontendUrl;
 
-    public SocialSuccessHandler(JwtService jwtService, JWTUtil jwtUtil, @Value("${backend.url}") String backendUrl) {
+    // 다시 frontend.url을 주입받도록 수정합니다.
+    public SocialSuccessHandler(JwtService jwtService, JWTUtil jwtUtil, @Value("${frontend.url}") String frontendUrl) {
         this.jwtService = jwtService;
         this.jwtUtil = jwtUtil;
-        this.backendUrl = backendUrl;
+        this.frontendUrl = frontendUrl;
     }
 
     @Override
@@ -34,10 +35,8 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         String username = authentication.getName();
         String role = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .filter(r -> r.startsWith("ROLE_"))
                 .findFirst()
                 .orElse("ROLE_USER");
-
 
         String refreshToken = jwtUtil.createJWT(username, role, false);
 
@@ -46,12 +45,11 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         // Refresh Token을 HttpOnly 쿠키로 설정
         CookieUtil.addRefreshTokenCookie(response, refreshToken);
 
-
-        String redirectUrl =  backendUrl.endsWith("/")
-                ? backendUrl + "jwt/refresh"
-                : backendUrl + "/jwt/refresh";
+        // 최종 목적지는 프론트엔드의 특정 페이지여야 합니다.
+        String redirectUrl = frontendUrl.endsWith("/")
+                ? frontendUrl + "login/success"
+                : frontendUrl + "/login/success";
 
         response.sendRedirect(redirectUrl);
-
     }
 }
