@@ -43,7 +43,7 @@ spring:
 
 # 프론트엔드 URL 설정
 frontend:
-  url: ${FRONTEND_DOMAIN}
+  url: "http://${FRONTEND_DOMAIN}"
 
 
 jwt:

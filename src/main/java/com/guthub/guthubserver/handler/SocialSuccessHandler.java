@@ -47,7 +47,7 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         CookieUtil.addRefreshTokenCookie(response, refreshToken);
 
         // 프론트엔드의 소셜 로그인 성공 처리 페이지로 리디렉션
-        String redirectUrl = frontendUrl.endsWith("/")
+        String redirectUrl =  frontendUrl.endsWith("/")
                 ? frontendUrl + "login/success"
                 : frontendUrl + "/login/success";
 
