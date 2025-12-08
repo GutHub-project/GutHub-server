@@ -93,7 +93,7 @@ jobs:
             -e "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
             -e "FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}" \
             \
-            -e "SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}:3306/users?serverTimezone=Asia/Seoul&characterEncoding=UTF-8" \
+            -e "SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}:3306/guthub?serverTimezone=Asia/Seoul&characterEncoding=UTF-8" \
             -e "SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}" \
             -e "SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}" \
             \
