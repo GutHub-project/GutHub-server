@@ -23,7 +23,11 @@ jobs:
           distribution: 'temurin'
 
       - name: Grant execute permission for gradlew
-        run: chmod +x .gradlew
+        run: chmod +x GutHub-project/GutHub-server/gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+        working-directory: ./GutHub-project/GutHub-server
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
