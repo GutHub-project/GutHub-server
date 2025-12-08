@@ -1,14 +1,12 @@
 name: guthub-dev.yml
 on:
   push:
-    branches: ["dev"]
-    paths:
-      - 'GutHub-project/GutHub-server/**'
+    branches:
+      - dev
 
   pull_request:
-    branches: ["dev"]
-    paths:
-      - 'GutHub-project/GutHub-server/**'
+    branches:
+      - dev
 
 jobs:
   build:
