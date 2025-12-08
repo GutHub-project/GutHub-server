@@ -19,6 +19,6 @@ public class ScheduleConfig {
     @Scheduled(cron = "0 0 3 * * *")
     public void refreshEntityTtlSchedule() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(8);
-        refreshRepository.deleteByCreatedDateBefore(cutoff);
+        refreshRepository.deleteByCreatedAtBefore(cutoff);
     }
 }
