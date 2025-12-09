@@ -42,11 +42,8 @@ spring:
             redirect-uri: "http://${SERVER_DOMAIN}/login/oauth2/code/kakao"
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
-
             scope:
               - profile_nickname
-              - account_email
-
             client-name: Kakao
         provider:
           naver:
