@@ -103,6 +103,9 @@ jobs:
             -e "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" \
             -e "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" \
             \
+            -e "NAVER_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" \
+            -e "NAVER_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" \
+            \
             moset1/guthub-server:${{ github.sha }}
 
             docker image prune -f
