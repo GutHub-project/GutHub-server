@@ -49,8 +49,14 @@ public class UserEntity extends BaseEntity {
     @Column(name = "nickname")
     private String nickname;
 
-    @Column(name = "birth_year")
-    private Integer birthYear;
+    @Column(name = "gender", length = 2)
+    private String gender;
+
+    @Column(name = "age_range")
+    private Integer ageRange;
+
+    @Column(name = "gutType", length = 20)
+    private String gutType;
 
     @Column(name = "email")
     private String email;
