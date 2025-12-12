@@ -1,6 +1,6 @@
 package com.guthub.guthubserver.domain.user.entity;
 
-import com.guthub.guthubserver.domain.gutTypes.entity.GutType;
+import com.guthub.guthubserver.domain.gut.entity.GutType;
 import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
 import com.guthub.guthubserver.domain.user.dto.UserRequestDTO;
 import com.guthub.guthubserver.global.entity.BaseEntity;

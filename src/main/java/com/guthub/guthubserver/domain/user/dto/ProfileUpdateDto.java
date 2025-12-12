@@ -1,6 +1,6 @@
 package com.guthub.guthubserver.domain.user.dto;
 
-import com.guthub.guthubserver.domain.gutTypes.entity.GutType;
+import com.guthub.guthubserver.domain.gut.entity.GutType;
 import com.nimbusds.openid.connect.sdk.claims.Gender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

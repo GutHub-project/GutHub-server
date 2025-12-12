@@ -3,6 +3,7 @@ package com.guthub.guthubserver.domain.user.service;
 import com.guthub.guthubserver.domain.jwt.service.JwtService;
 import com.guthub.guthubserver.domain.user.dto.CustomOAuth2User;
 import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
+import com.guthub.guthubserver.domain.user.dto.ProfileResponseDto;
 import com.guthub.guthubserver.domain.user.dto.UserRequestDTO;
 import com.guthub.guthubserver.domain.user.dto.UserResponseDTO;
 import com.guthub.guthubserver.domain.user.entity.SocialProviderType;
@@ -52,6 +53,14 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         userEntity.updateProfile(dto);
 
         return userEntity.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileResponseDto readUserProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity userEntity = userRepository.findByUsernameAndIsLock(username, false)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+        return new ProfileResponseDto(userEntity);
     }
 
     @Transactional(readOnly = true)

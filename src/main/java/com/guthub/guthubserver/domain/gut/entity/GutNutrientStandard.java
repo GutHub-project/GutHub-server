@@ -1,4 +1,4 @@
-package com.guthub.guthubserver.domain.gutTypes.entity;
+package com.guthub.guthubserver.domain.gut.entity;
 
 import com.guthub.guthubserver.global.entity.BaseEntity;
 import jakarta.persistence.Entity;
