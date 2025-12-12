@@ -26,13 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 추가
-
 import java.util.List;
-// import org.springframework.security.core.authority.SimpleGrantedAuthority; // 제거
-// import org.springframework.security.core.context.SecurityContextHolder; // 제거
-// import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // 제거
-
 
 @Configuration
 @EnableWebSecurity
@@ -43,7 +37,7 @@ public class DevSecurityConfig {
     private final JWTUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService; // UserDetailsService 주입 추가
+
     @Qualifier("SocialSuccessHandler")
     private final AuthenticationSuccessHandler socialSuccessHandler;
     @Qualifier("LoginSuccessHandler")
@@ -96,7 +90,7 @@ public class DevSecurityConfig {
 
         // JWT 필터 및 로그인/로그아웃 필터 추가
         http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new JWTFilter(jwtUtil, userDetailsService), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달
+        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달 부분 제거
         http.logout(logout -> logout
                 .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil))
                 .logoutSuccessHandler((request, response, authentication) -> {

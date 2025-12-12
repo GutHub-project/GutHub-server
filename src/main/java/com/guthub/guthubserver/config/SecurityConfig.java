@@ -28,7 +28,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 추가
+// import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 제거
 
 import java.util.List;
 
@@ -42,20 +42,20 @@ public class SecurityConfig {
     private final AuthenticationSuccessHandler socialSuccessHandler;
     private final JwtService jwtService;
     private final JWTUtil jwtUtil;
-    private final UserDetailsService userDetailsService; // UserDetailsService 주입 추가
+    // private final UserDetailsService userDetailsService; // 제거
     private final String frontendUrl;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
                           @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
                           @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler,
-                          JwtService jwtService, JWTUtil jwtUtil, UserDetailsService userDetailsService, // 생성자에 추가
+                          JwtService jwtService, JWTUtil jwtUtil, // UserDetailsService 인자 제거
                           @Value("${frontend.url") String frontendUrl) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
         this.socialSuccessHandler = socialSuccessHandler;
         this.jwtService = jwtService;
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService; // 필드 초기화
+        // this.userDetailsService = userDetailsService; // 제거
         this.frontendUrl = frontendUrl;
     }
 
@@ -121,7 +121,7 @@ public class SecurityConfig {
         );
 
         http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new JWTFilter(jwtUtil, userDetailsService), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달
+        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달 부분 제거
         http.logout(logout -> logout
                 .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil))
                 .logoutSuccessHandler((request, response, authentication) -> {

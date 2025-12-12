@@ -13,18 +13,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
 
-    public JWTFilter(JWTUtil jwtUtil, UserDetailsService userDetailsService) {
+
+    public JWTFilter(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
+
     }
 
     @Override
@@ -53,13 +51,13 @@ public class JWTFilter extends OncePerRequestFilter {
             String username = jwtUtil.getUsername(accessToken);
             String role = jwtUtil.getRole(accessToken);
 
-            // UserDetailsService를 사용하여 UserDetails를 로드
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            // UserDetailsService를 사용하여 UserDetails를 로드하는 부분 제거
+            // UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
-            // UsernamePasswordAuthenticationToken의 principal로 UserDetails를 설정
-            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+            // UsernamePasswordAuthenticationToken의 principal로 username (String)을 설정
+            Authentication auth = new UsernamePasswordAuthenticationToken(username, null, authorities); // userDetails 대신 username 사용
             SecurityContextHolder.getContext().setAuthentication(auth);
 
             filterChain.doFilter(request, response);
