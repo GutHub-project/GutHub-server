@@ -29,6 +29,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 추가
 
 import java.util.List;
+// import org.springframework.security.core.authority.SimpleGrantedAuthority; // 제거
+// import org.springframework.security.core.context.SecurityContextHolder; // 제거
+// import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // 제거
+
 
 @Configuration
 @EnableWebSecurity
@@ -84,8 +88,7 @@ public class DevSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/token", "/login/**", "/oauth2/**", "/logout",
-                        "/user", "/user/exist", "/jwt/refresh", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // /logout 경로 추가
+                .requestMatchers("/test/token", "/login/**", "/oauth2/**", "/logout", "/jwt/refresh").permitAll() // /jwt/refresh 추가
                 .anyRequest().authenticated());
 
         // 소셜 로그인 설정 추가
