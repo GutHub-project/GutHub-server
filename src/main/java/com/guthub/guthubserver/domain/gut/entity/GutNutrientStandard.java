@@ -1,14 +1,18 @@
-package com.guthub.guthubserver.domain.gutTypes.entity;
+package com.guthub.guthubserver.domain.gut.entity;
 
 import com.guthub.guthubserver.global.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @Table(name = "gut_nutrient_standards")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class GutNutrientStandard extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

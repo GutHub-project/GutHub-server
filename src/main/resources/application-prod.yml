@@ -1,4 +1,7 @@
 spring:
+  config:
+    activate:
+      on-profile: "prod"
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}

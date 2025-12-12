@@ -1,17 +1,13 @@
 package com.guthub.guthubserver.domain.user.service;
 
+import com.guthub.guthubserver.domain.gut.entity.GutType;
+import com.guthub.guthubserver.domain.gut.repository.GutTypeRepository;
 import com.guthub.guthubserver.domain.jwt.service.JwtService;
-import com.guthub.guthubserver.domain.user.dto.CustomOAuth2User;
-import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
-import com.guthub.guthubserver.domain.user.dto.UserRequestDTO;
-import com.guthub.guthubserver.domain.user.dto.UserResponseDTO;
+import com.guthub.guthubserver.domain.user.dto.*;
 import com.guthub.guthubserver.domain.user.entity.SocialProviderType;
 import com.guthub.guthubserver.domain.user.entity.UserEntity;
 import com.guthub.guthubserver.domain.user.entity.UserRoleType;
 import com.guthub.guthubserver.domain.user.repository.UserRepository;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,17 +25,23 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 @Service
 public class UserService extends DefaultOAuth2UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final GutTypeRepository gutTypeRepository;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, JwtService jwtService) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, JwtService jwtService, GutTypeRepository gutTypeRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.gutTypeRepository = gutTypeRepository;
     }
 
     @Transactional
@@ -49,9 +51,20 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         UserEntity userEntity = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
 
-        userEntity.updateProfile(dto);
+        GutType gutType = gutTypeRepository.findByName(dto.gutType())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장 건강 타입입니다: " + dto.gutType()));
+
+        userEntity.updateProfile(dto, gutType);
 
         return userEntity.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileResponseDto readUserProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity userEntity = userRepository.findByUsernameAndIsLock(username, false)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+        return new ProfileResponseDto(userEntity);
     }
 
     @Transactional(readOnly = true)
@@ -146,7 +159,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
             roleType = entity.getRoleType();
             UserRequestDTO dto = new UserRequestDTO();
             dto.setNickname(nickname);
-dto.setEmail(email);
+            dto.setEmail(email);
             entity.updateUser(dto);
             userRepository.save(entity);
         } else {

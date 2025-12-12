@@ -2,19 +2,10 @@ package com.guthub.guthubserver.domain.diet.entity;
 
 import com.guthub.guthubserver.domain.user.entity.UserEntity;
 import com.guthub.guthubserver.global.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
-import java.time.LocalTime;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "diet_logs")
@@ -35,12 +26,23 @@ public class DietLog extends BaseEntity {
     @Column(name = "log_date", nullable = false)
     private LocalDate logDate;
 
-    @Column(name = "log_time", nullable = false)
-    private LocalTime logTime;
-
     @Column(columnDefinition = "FLOAT DEFAULT 1.0")
     private Float amount;
 
+    @Enumerated(EnumType.STRING) // 추가
     @Column(name = "meal_type", length = 20)
-    private String mealType;
+    private MealType mealType; // String에서 MealType으로 변경
+
+    // --- 업데이트 메소드 추가 ---
+    public void updateFood(Food food) {
+        this.food = food;
+    }
+
+    public void updateAmount(Float amount) {
+        this.amount = amount;
+    }
+
+    public void updateMealType(MealType mealType) { // 파라미터 타입 변경
+        this.mealType = mealType;
+    }
 }

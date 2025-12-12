@@ -1,0 +1,58 @@
+spring:
+  config:
+    activate:
+      on-profile: "local"
+
+  # H2 Database Settings
+  datasource:
+    url: jdbc:h2:mem:testdb  # In-memory 모드로 실행
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: '' # 비밀번호 없음
+
+  # H2 Console 활성화
+  h2:
+    console:
+      enabled: true
+      path: /h2-console  # http://localhost:8080/h2-console 로 접속 가능
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # 애플리케이션 실행 시 스키마 생성, 종료 시 삭제
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    # H2 데이터베이스 방언 설정
+    database-platform: org.hibernate.dialect.H2Dialect
+    # JPA가 스키마 생성 후에 데이터 초기화 스크립트가 실행되도록 지연시킴
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+      data-locations: classpath:data-local.sql
+  # --- 나머지 설정 (OAuth, JWT 등) ---
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "your-google-client-id"
+            client-secret: "your-google-client-secret"
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            scope:
+              - email
+              - profile
+          # Naver, Kakao 등 다른 OAuth 설정도 필요에 따라 유지하거나 제거할 수 있습니다.
+
+# 프론트엔드 URL 설정
+frontend:
+  url: "http://localhost:3000"
+
+jwt:
+  secret:
+    key: "your-jwt-secret-key-for-local-development-and-testing"
+
+backend:
+  url: "http://localhost:8080"
