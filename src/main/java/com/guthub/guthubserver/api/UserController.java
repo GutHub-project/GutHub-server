@@ -1,5 +1,6 @@
 package com.guthub.guthubserver.api;
 
+import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
 import com.guthub.guthubserver.domain.user.dto.UserRequestDTO;
 import com.guthub.guthubserver.domain.user.dto.UserResponseDTO;
 import com.guthub.guthubserver.domain.user.service.UserService;
@@ -81,5 +82,14 @@ public class UserController {
     ) throws AccessDeniedException {
         userService.deleteUser(dto);
         return ResponseEntity.ok(ApiResponse.of("SUCCESS", "회원 탈퇴 성공"));
+    }
+
+    @PutMapping(value = "/user/profile", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, Long>>> updateProfileApi(
+            @Validated @RequestBody ProfileUpdateDto dto
+    ) throws AccessDeniedException {
+        Long id = userService.updateProfile(dto);
+        Map<String, Long> data = Collections.singletonMap("userEntityId", id);
+        return ResponseEntity.ok(ApiResponse.of("SUCCESS", "프로필 정보 수정 성공", data));
     }
 }

@@ -1,12 +1,18 @@
 package com.guthub.guthubserver.domain.user.entity;
 
+import com.guthub.guthubserver.domain.gutTypes.entity.GutType;
+import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
 import com.guthub.guthubserver.domain.user.dto.UserRequestDTO;
 import com.guthub.guthubserver.global.entity.BaseEntity;
+import com.nimbusds.openid.connect.sdk.claims.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -49,8 +55,16 @@ public class UserEntity extends BaseEntity {
     @Column(name = "nickname")
     private String nickname;
 
-    @Column(name = "birth_year")
-    private Integer birthYear;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Column(name = "age_range")
+    private Integer ageRange;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gut_type_id")
+    private GutType gutType;
 
     @Column(name = "email")
     private String email;
@@ -68,5 +82,10 @@ public class UserEntity extends BaseEntity {
         this.nickname = dto.getNickname();
     }
 
-
+    public void updateProfile(ProfileUpdateDto dto) {
+        this.nickname = dto.nickname();
+        this.ageRange = dto.ageRange();
+        this.gender = dto.gender();
+        this.gutType = dto.gutType();
+    }
 }
