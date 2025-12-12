@@ -26,18 +26,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 추가
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@Profile("dev")
+@Profile({"dev", "local"})
 @RequiredArgsConstructor
 public class DevSecurityConfig {
 
     private final JWTUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtService jwtService;
+    private final UserDetailsService userDetailsService; // UserDetailsService 주입 추가
     @Qualifier("SocialSuccessHandler")
     private final AuthenticationSuccessHandler socialSuccessHandler;
     @Qualifier("LoginSuccessHandler")
@@ -82,7 +84,8 @@ public class DevSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/token", "/login/**", "/oauth2/**").permitAll() // 소셜 로그인 관련 경로 허용
+                .requestMatchers("/test/token", "/login/**", "/oauth2/**", "/logout",
+                        "/user", "/user/exist", "/jwt/refresh", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // /logout 경로 추가
                 .anyRequest().authenticated());
 
         // 소셜 로그인 설정 추가
@@ -90,8 +93,15 @@ public class DevSecurityConfig {
 
         // JWT 필터 및 로그인/로그아웃 필터 추가
         http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.web.authentication.logout.LogoutFilter.class);
-        http.logout(logout -> logout.addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil)));
+        http.addFilterBefore(new JWTFilter(jwtUtil, userDetailsService), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달
+        http.logout(logout -> logout
+                .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil))
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("Logout successful");
+                    response.getWriter().flush();
+                })
+        );
 
         http.exceptionHandling(e -> e
                 .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))

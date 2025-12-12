@@ -28,6 +28,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 추가
 
 import java.util.List;
 
@@ -41,17 +42,20 @@ public class SecurityConfig {
     private final AuthenticationSuccessHandler socialSuccessHandler;
     private final JwtService jwtService;
     private final JWTUtil jwtUtil;
+    private final UserDetailsService userDetailsService; // UserDetailsService 주입 추가
     private final String frontendUrl;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
                           @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
                           @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler,
-                          JwtService jwtService, JWTUtil jwtUtil, @Value("${frontend.url") String frontendUrl) {
+                          JwtService jwtService, JWTUtil jwtUtil, UserDetailsService userDetailsService, // 생성자에 추가
+                          @Value("${frontend.url") String frontendUrl) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
         this.socialSuccessHandler = socialSuccessHandler;
         this.jwtService = jwtService;
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService; // 필드 초기화
         this.frontendUrl = frontendUrl;
     }
 
@@ -104,8 +108,8 @@ public class SecurityConfig {
                         "/user/exist",
                         "/jwt/refresh",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**"
-
+                        "/v3/api-docs/**",
+                        "/logout"
                 ).permitAll()
                 .anyRequest().authenticated()
         );
@@ -117,9 +121,15 @@ public class SecurityConfig {
         );
 
         http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.web.authentication.logout.LogoutFilter.class);
-        http.logout(logout -> logout.addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil)));
-
+        http.addFilterBefore(new JWTFilter(jwtUtil, userDetailsService), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달
+        http.logout(logout -> logout
+                .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil))
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("Logout successful");
+                    response.getWriter().flush();
+                })
+        );
         http.exceptionHandling(e -> e
                 .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
                 .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))

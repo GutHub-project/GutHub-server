@@ -21,6 +21,7 @@ import com.guthub.guthubserver.domain.gut.repository.GutNutrientStandardReposito
 import com.guthub.guthubserver.domain.user.entity.UserEntity;
 import com.guthub.guthubserver.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder; // SecurityContextHolder import 추가
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,8 @@ public class DietLogService {
     private final DailyGutHealthScoreRepository dailyGutHealthScoreRepository;
 
     @Transactional
-    public List<DietLogResponseDto> createDietLog(DietLogRequestDto requestDto, String username) {
+    public List<DietLogResponseDto> createDietLog(DietLogRequestDto requestDto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -72,7 +74,8 @@ public class DietLogService {
                 .collect(Collectors.toList());
     }
 
-    public DailyDietSummaryResponseDto getDietLogsByDate(LocalDate date, String username) {
+    public DailyDietSummaryResponseDto getDietLogsByDate(LocalDate date) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -95,7 +98,8 @@ public class DietLogService {
     }
 
     // --- ID로 식단 기록 조회 메소드 추가 ---
-    public DietLogResponseDto getDietLogById(Long id, String username) {
+    public DietLogResponseDto getDietLogById(Long id) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -110,7 +114,8 @@ public class DietLogService {
     }
 
     @Transactional
-    public DietLogResponseDto updateDietLog(Long id, DietLogUpdateRequestDto requestDto, String username) {
+    public DietLogResponseDto updateDietLog(Long id, DietLogUpdateRequestDto requestDto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -136,7 +141,8 @@ public class DietLogService {
     }
 
     @Transactional
-    public void deleteDietLog(Long dietLogId, String username) {
+    public void deleteDietLog(Long dietLogId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -160,7 +166,8 @@ public class DietLogService {
                 .collect(Collectors.toList());
     }
 
-    public GutHealthStreakResponseDto getCurrentGutHealthStreak(String username) {
+    public GutHealthStreakResponseDto getCurrentGutHealthStreak() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 

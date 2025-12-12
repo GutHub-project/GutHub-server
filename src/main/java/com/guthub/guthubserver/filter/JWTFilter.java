@@ -13,18 +13,27 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
-    public JWTFilter(JWTUtil jwtUtil) {
+    public JWTFilter(JWTUtil jwtUtil, UserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // /logout 경로에 대한 요청은 JWT 검증을 건너뛴다.
+        if (request.getRequestURI().equals("/logout")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String authorization = request.getHeader("Authorization");
 
@@ -41,13 +50,16 @@ public class JWTFilter extends OncePerRequestFilter {
         String accessToken = authorization.split(" ")[1];
 
         if (jwtUtil.isValid(accessToken, true)) {
-
             String username = jwtUtil.getUsername(accessToken);
             String role = jwtUtil.getRole(accessToken);
 
+            // UserDetailsService를 사용하여 UserDetails를 로드
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
             List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
-            Authentication auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+            // UsernamePasswordAuthenticationToken의 principal로 UserDetails를 설정
+            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
 
             filterChain.doFilter(request, response);
