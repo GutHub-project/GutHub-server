@@ -82,7 +82,8 @@ public class DevSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/token", "/login/**", "/oauth2/**", "/logout", "/jwt/refresh").permitAll() // /jwt/refresh 추가
+                .requestMatchers("/test/token","/user", "/user/exist", "/login/**", "/oauth2/**", "/logout", "/jwt/refresh",
+                        "/swagger-ui/**", "/v3/api-docs/**").permitAll() // /jwt/refresh 추가
                 .anyRequest().authenticated());
 
         // 소셜 로그인 설정 추가
