@@ -23,7 +23,7 @@ spring:
   # data-dev.sql 스크립트를 사용하도록 설정
   sql:
     init:
-      mode: always
+      mode: never
       encoding: UTF-8
       data-locations: classpath:data-dev.sql
 
