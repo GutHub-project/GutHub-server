@@ -27,6 +27,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
         // /logout 경로에 대한 요청은 JWT 검증을 건너뛴다.
         if (request.getRequestURI().equals("/logout")) {
             filterChain.doFilter(request, response);
