@@ -1,76 +1,178 @@
 package com.guthub.guthubserver.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.guthub.guthubserver.domain.gut.entity.GutType;
 import com.guthub.guthubserver.domain.jwt.service.JwtService;
+import com.guthub.guthubserver.domain.user.dto.CustomOAuth2User;
+import com.guthub.guthubserver.domain.user.entity.UserEntity;
+import com.guthub.guthubserver.domain.user.entity.UserRoleType;
+import com.guthub.guthubserver.domain.user.repository.UserRepository;
 import com.guthub.guthubserver.util.JWTUtil;
-import java.util.List;
-import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 class SocialSuccessHandlerTest {
 
+    @InjectMocks
+    private SocialSuccessHandler successHandler;
+
+    @Mock
+    private JwtService jwtService;
+
+    @Mock
+    private JWTUtil jwtUtil;
+
+    @Mock
+    private UserRepository userRepository;
+
+    private static final String FRONTEND_URL = "http://frontend.test";
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(successHandler, "frontendUrl", FRONTEND_URL);
+    }
+
+    /**
+     * 신규 사용자 → /profile-setup + tempToken
+     */
     @Test
-    void successHandler_shouldSetRefreshTokenCookie_andRedirect() throws Exception {
-
+    void 신규_사용자면_프로필_설정_페이지로_리디렉션한다() throws Exception {
         // given
-        JwtService jwtService = mock(JwtService.class);
-        JWTUtil jwtUtil = mock(JWTUtil.class);
+        String username = "oauth-user";
 
-        String frontendUrl = "http://localhost:8080";
+        CustomOAuth2User oAuth2User = createOAuth2User(username);
 
-        // handler
-        SocialSuccessHandler handler =
-                new SocialSuccessHandler(jwtService, jwtUtil, frontendUrl);
+        TestingAuthenticationToken authentication =
+                new TestingAuthenticationToken(oAuth2User, null, oAuth2User.getAuthorities());
 
-        // OAuth2User principal 구성
-        var oAuth2User = new DefaultOAuth2User(
-                List.of(new SimpleGrantedAuthority("ROLE_USER")),
-                Map.of(
-                        "sub", "google_123456",
-                        "email", "test@example.com"
-                ),
-                "sub" // nameAttributeKey
-        );
-
-        Authentication authentication = new OAuth2AuthenticationToken(
-                oAuth2User,
-                oAuth2User.getAuthorities(),
-                "google"
-        );
-
-        // JWTUtil mocking
-        when(jwtUtil.createJWT("google_123456", "ROLE_USER", false))
-                .thenReturn("REFRESH_TOKEN_ABC");
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 
+        when(userRepository.findByUsernameAndIsLock(username, false))
+                .thenReturn(Optional.empty());
+
+        when(jwtUtil.createJWT(username, "ROLE_TEMP", true))
+                .thenReturn("temp.jwt.token");
+
         // when
-        handler.onAuthenticationSuccess(request, response, authentication);
+        successHandler.onAuthenticationSuccess(
+                new MockHttpServletRequest(),
+                response,
+                authentication
+        );
 
-        // then — redirect URL
+        // then
         assertThat(response.getRedirectedUrl())
-                .isEqualTo("http://localhost:8080/login/success");
+                .startsWith(FRONTEND_URL + "/profile-setup")
+                .contains("tempToken=temp.jwt.token");
 
-        // then — refreshToken 쿠키 존재
-        var cookie = response.getCookie("refreshToken");
-        assertThat(cookie).isNotNull();
-        assertThat(cookie.getValue()).isEqualTo("REFRESH_TOKEN_ABC");
-        assertThat(cookie.isHttpOnly()).isTrue();
+        verify(jwtUtil).createJWT(username, "ROLE_TEMP", true);
+        verify(jwtService, never()).addRefresh(any(), any());
+    }
 
-        // then — DB 저장 검증
-        verify(jwtService, times(1))
-                .addRefresh("google_123456", "REFRESH_TOKEN_ABC");
+    /**
+     * 기존 사용자 + gutType 있음 → /login-success
+     */
+    @Test
+    void 기존_사용자면_로그인_성공_페이지로_리디렉션한다() throws Exception {
+        // given
+        String username = "existing-user";
+
+        CustomOAuth2User oAuth2User = createOAuth2User(username);
+
+        TestingAuthenticationToken authentication =
+                new TestingAuthenticationToken(oAuth2User, null, oAuth2User.getAuthorities());
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        UserEntity user = mock(UserEntity.class);
+        when(user.getUsername()).thenReturn(username);
+        when(user.getRoleType()).thenReturn(UserRoleType.USER);
+        when(user.getGutType()).thenReturn(GutType.builder().build());
+
+        when(userRepository.findByUsernameAndIsLock(username, false))
+                .thenReturn(Optional.of(user));
+
+        when(jwtUtil.createJWT(username, "USER", true))
+                .thenReturn("access.jwt");
+
+        when(jwtUtil.createJWT(username, "USER", false))
+                .thenReturn("refresh.jwt");
+
+        // when
+        successHandler.onAuthenticationSuccess(
+                new MockHttpServletRequest(),
+                response,
+                authentication
+        );
+
+        // then
+        assertThat(response.getRedirectedUrl())
+                .startsWith(FRONTEND_URL + "/login-success")
+                .contains("accessToken=access.jwt");
+
+        verify(jwtService).addRefresh(username, "refresh.jwt");
+        assertThat(response.getCookies()).isNotEmpty();
+    }
+
+    /**
+     * DB에 있지만 gutType 없음 → 신규 사용자 처리
+     */
+    @Test
+    void gutType이_null이면_신규_사용자로_처리한다() throws Exception {
+        // given
+        String username = "temp-user";
+
+        CustomOAuth2User oAuth2User = createOAuth2User(username);
+
+        TestingAuthenticationToken authentication =
+                new TestingAuthenticationToken(oAuth2User, null, oAuth2User.getAuthorities());
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        UserEntity user = mock(UserEntity.class);
+
+        when(user.getGutType()).thenReturn(null);
+
+        when(userRepository.findByUsernameAndIsLock(username, false))
+                .thenReturn(Optional.of(user));
+
+        // when
+        successHandler.onAuthenticationSuccess(
+                new MockHttpServletRequest(),
+                response,
+                authentication
+        );
+
+        // then
+        assertThat(response.getRedirectedUrl())
+                .contains("/profile-setup");
+
+    }
+
+    private CustomOAuth2User createOAuth2User(String username) {
+        return new CustomOAuth2User(
+                Map.of(
+                        "sub", username,
+                        "email", username + "@test.com"
+                ),
+                List.of(new SimpleGrantedAuthority("ROLE_USER")),
+                username
+        );
     }
 }
