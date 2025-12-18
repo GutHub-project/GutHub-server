@@ -1,15 +1,8 @@
 package com.guthub.guthubserver.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.guthub.guthubserver.domain.jwt.service.JwtService;
+import com.guthub.guthubserver.domain.user.repository.UserRepository;
 import com.guthub.guthubserver.util.JWTUtil;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -17,6 +10,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 class SocialSuccessHandlerTest {
 
@@ -26,12 +25,12 @@ class SocialSuccessHandlerTest {
         // given
         JwtService jwtService = mock(JwtService.class);
         JWTUtil jwtUtil = mock(JWTUtil.class);
-
+        UserRepository userRepository = mock(UserRepository.class);
         String frontendUrl = "http://localhost:8080";
 
         // handler
         SocialSuccessHandler handler =
-                new SocialSuccessHandler(jwtService, jwtUtil, frontendUrl);
+                new SocialSuccessHandler(jwtService, jwtUtil, userRepository );
 
         // OAuth2User principal 구성
         var oAuth2User = new DefaultOAuth2User(

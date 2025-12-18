@@ -56,6 +56,11 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
 
         userEntity.updateProfile(dto, gutType);
 
+        // 프로필 업데이트 후, 역할이 TEMP이면 USER로 승격
+        if (userEntity.getRoleType() == UserRoleType.TEMP) {
+            userEntity.promoteToUser();
+        }
+
         return userEntity.getId();
     }
 
@@ -152,7 +157,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         }
 
         Optional<UserEntity> entityOptional = userRepository.findByUsernameAndIsSocial(username, true);
-        UserRoleType roleType = UserRoleType.USER;
+        UserRoleType roleType;
 
         if (entityOptional.isPresent()) {
             UserEntity entity = entityOptional.get();
@@ -163,13 +168,14 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
             entity.updateUser(dto);
             userRepository.save(entity);
         } else {
+            roleType = UserRoleType.TEMP; // 신규 사용자는 TEMP 역할 부여
             UserEntity newUserEntity = UserEntity.builder()
                     .username(username)
                     .password("")
                     .isLock(false)
                     .isSocial(true)
                     .socialProviderType(SocialProviderType.valueOf(registrationId))
-                    .roleType(UserRoleType.USER)
+                    .roleType(roleType)
                     .nickname(nickname)
                     .email(email)
                     .build();

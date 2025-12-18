@@ -80,4 +80,8 @@ public class UserEntity extends BaseEntity {
         this.gender = dto.gender();
         this.gutType = gutType;
     }
+
+    public void promoteToUser() {
+        this.roleType = UserRoleType.USER;
+    }
 }

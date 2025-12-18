@@ -18,15 +18,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.core.userdetails.UserDetailsService; // UserDetailsService import 추가
 
 import java.util.List;
 
@@ -65,11 +63,6 @@ public class DevSecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
@@ -84,8 +77,11 @@ public class DevSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/token", "/login/**", "/oauth2/**", "/logout",
-                        "/user", "/user/exist", "/jwt/refresh", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // /logout 경로 추가
+                // 기존 permitAll 경로 유지
+                .requestMatchers("/test/token", "/login/**", "/oauth2/**", "/user", "/user/exist", "/jwt/refresh", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // 권한 설정 추가
+                .requestMatchers("/user/profile").hasAnyRole("TEMP", "USER")
+                .requestMatchers("/api/**").hasRole("USER")
                 .anyRequest().authenticated());
 
         // 소셜 로그인 설정 추가
