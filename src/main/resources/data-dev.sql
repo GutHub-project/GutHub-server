@@ -9,7 +9,8 @@ INSERT INTO gut_types (id, name, code, description, image_url) VALUES
 -- 비밀번호는 모두 "password"를 BCrypt로 암호화한 값입니다.
 INSERT INTO users (id, username, password, is_lock, is_social, role_type, nickname, email, gender, age_range, gut_type_id) VALUES
 (101, 'testuser1', '$2a$10$fL9aT0DRr.r.bJd9w.g5A.Iu2.n2N8.g3.g3.g3.g3.g3.g3', false, false, 'USER', '테스트유저1', 'testuser1@guthub.com', 'MALE', 20, 2), -- 변비형
-(102, 'testuser2', '$2a$10$fL9aT0DRr.r.bJd9w.g5A.Iu2.n2N8.g3.g3.g3.g3.g3.g3', false, false, 'USER', '테스트유저2', 'testuser2@guthub.com', 'FEMALE', 30, 3); -- 설사형
+(102, 'testuser2', '$2a$10$fL9aT0DRr.r.bJd9w.g5A.Iu2.n2N8.g3.g3.g3.g3.g3.g3', false, false, 'USER', '테스트유저2', 'testuser2@guthub.com', 'FEMALE', 30, 3), -- 설사형
+(103, 'testuser3', '$2a$10$fL9aT13Rr.r.bJd9w.g5A.Iu2.n2N8.g3.g3.g3.g3.g3.g3', false, false, 'TEMP', '테스트유저3', 'testuser3@guthub.com', 'FEMALE', 30, 3); -- 설사형
 
 -- 음식(Food) 테스트 데이터
 INSERT INTO foods (id, name, calories, dietary_fiber, probiotics, saturated_fat, sugar, refined_carbs, is_flour_based, flour) VALUES
