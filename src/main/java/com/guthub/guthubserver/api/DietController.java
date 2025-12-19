@@ -47,28 +47,28 @@ public class DietController {
         return ResponseEntity.ok(ApiResponse.of("SUCCESS", "식단 조회 성공", responseDto));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{dietLogId}")
     @Operation(summary = "Get a diet log by ID", description = "Retrieves a single diet log entry by its ID.")
     public ResponseEntity<ApiResponse<DietLogResponseDto>> getDietLogById(
-            @PathVariable Long id) {
-        DietLogResponseDto responseDto = dietLogService.getDietLogById(id);
+            @PathVariable Long dietLogId) {
+        DietLogResponseDto responseDto = dietLogService.getDietLogById(dietLogId);
         return ResponseEntity.ok(ApiResponse.of("SUCCESS", "식단 상세 조회 성공", responseDto));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{dietLogId}")
     @Operation(summary = "Update a diet log", description = "Updates an existing diet log entry for the authenticated user.")
     public ResponseEntity<ApiResponse<DietLogResponseDto>> updateDietLog(
-            @PathVariable Long id,
+            @PathVariable Long dietLogId,
             @Valid @RequestBody DietLogUpdateRequestDto requestDto) {
-        DietLogResponseDto responseDto = dietLogService.updateDietLog(id, requestDto);
+        DietLogResponseDto responseDto = dietLogService.updateDietLog(dietLogId, requestDto);
         return ResponseEntity.ok(ApiResponse.of("SUCCESS", "식단 수정 성공", responseDto));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{dietLogId}")
     @Operation(summary = "Delete a diet log", description = "Deletes a specific diet log entry for the authenticated user.")
     public ResponseEntity<ApiResponse<Void>> deleteDietLog(
-            @PathVariable Long id) {
-        dietLogService.deleteDietLog(id);
+            @PathVariable Long dietLogId) {
+        dietLogService.deleteDietLog(dietLogId);
         return ResponseEntity.ok(ApiResponse.of("SUCCESS", "식단 삭제 성공"));
     }
 

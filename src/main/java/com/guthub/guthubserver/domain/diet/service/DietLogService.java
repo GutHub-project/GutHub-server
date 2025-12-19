@@ -12,23 +12,20 @@ import com.guthub.guthubserver.domain.diet.entity.Food;
 import com.guthub.guthubserver.domain.diet.entity.MealType;
 import com.guthub.guthubserver.domain.diet.repository.DietLogRepository;
 import com.guthub.guthubserver.domain.diet.repository.FoodRepository;
-import com.guthub.guthubserver.domain.gut.entity.DailyGutHealthScore;
-import com.guthub.guthubserver.domain.gut.entity.GutNutrientStandard;
-import com.guthub.guthubserver.domain.gut.entity.GutType;
-import com.guthub.guthubserver.domain.gut.entity.OverallGutHealthStatus;
+import com.guthub.guthubserver.domain.gut.entity.*; // gut.entity.* import
 import com.guthub.guthubserver.domain.gut.repository.DailyGutHealthScoreRepository;
 import com.guthub.guthubserver.domain.gut.repository.GutNutrientStandardRepository;
 import com.guthub.guthubserver.domain.user.entity.UserEntity;
 import com.guthub.guthubserver.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder; // SecurityContextHolder import 추가
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap; // HashMap 대신 EnumMap 사용
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,7 +43,7 @@ public class DietLogService {
 
     @Transactional
     public List<DietLogResponseDto> createDietLog(DietLogRequestDto requestDto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -66,7 +63,6 @@ public class DietLogService {
                 })
                 .collect(Collectors.toList());
 
-        // 식단 기록 후 일일 건강 점수 업데이트
         updateDailyGutHealthScore(user, requestDto.getLogDate());
 
         return savedDietLogs.stream()
@@ -75,13 +71,12 @@ public class DietLogService {
     }
 
     public DailyDietSummaryResponseDto getDietLogsByDate(LocalDate date) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         List<DietLog> dietLogs = dietLogRepository.findAllByUserAndLogDate(user, date);
 
-        // 식단 항목을 mealType별로 그룹화
         Map<MealType, List<DietLogResponseDto>> categorizedDietLogs = dietLogs.stream()
                 .map(DietLogResponseDto::new)
                 .collect(Collectors.groupingBy(DietLogResponseDto::getMealType));
@@ -97,14 +92,13 @@ public class DietLogService {
                 .build();
     }
 
-    // --- ID로 식단 기록 조회 메소드 추가 ---
-    public DietLogResponseDto getDietLogById(Long id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
+    public DietLogResponseDto getDietLogById(Long dietLogId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        DietLog dietLog = dietLogRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Diet log not found with ID: " + id));
+        DietLog dietLog = dietLogRepository.findById(dietLogId)
+                .orElseThrow(() -> new IllegalArgumentException("Diet log not found with ID: " + dietLogId));
 
         if (!dietLog.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("Unauthorized to view this diet log.");
@@ -114,13 +108,13 @@ public class DietLogService {
     }
 
     @Transactional
-    public DietLogResponseDto updateDietLog(Long id, DietLogUpdateRequestDto requestDto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
+    public DietLogResponseDto updateDietLog(Long dietLogId, DietLogUpdateRequestDto requestDto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        DietLog dietLog = dietLogRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Diet log not found with ID: " + id));
+        DietLog dietLog = dietLogRepository.findById(dietLogId)
+                .orElseThrow(() -> new IllegalArgumentException("Diet log not found with ID: " + dietLogId));
 
         if (!dietLog.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("Unauthorized to update this diet log.");
@@ -135,14 +129,13 @@ public class DietLogService {
 
         DietLog updatedDietLog = dietLogRepository.save(dietLog);
 
-        // 식단 수정 후 일일 건강 점수 업데이트
         updateDailyGutHealthScore(user, updatedDietLog.getLogDate());
         return new DietLogResponseDto(updatedDietLog);
     }
 
     @Transactional
     public void deleteDietLog(Long dietLogId) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -156,7 +149,6 @@ public class DietLogService {
         LocalDate logDate = dietLog.getLogDate();
         dietLogRepository.delete(dietLog);
 
-        // 식단 삭제 후 일일 건강 점수 업데이트
         updateDailyGutHealthScore(user, logDate);
     }
 
@@ -167,7 +159,7 @@ public class DietLogService {
     }
 
     public GutHealthStreakResponseDto getCurrentGutHealthStreak() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // 서비스에서 사용자 이름 가져오기
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -189,9 +181,9 @@ public class DietLogService {
             Object dateObj = streakResult.get("lastRecordDate");
             if (dateObj instanceof LocalDate) {
                 lastRecordDate = (LocalDate) dateObj;
-            } else if (dateObj instanceof java.sql.Date) { // JDBC Date 타입 처리
+            } else if (dateObj instanceof java.sql.Date) {
                 lastRecordDate = ((java.sql.Date) dateObj).toLocalDate();
-            } else if (dateObj instanceof String) { // String으로 반환될 경우 파싱
+            } else if (dateObj instanceof String) {
                 lastRecordDate = LocalDate.parse((String) dateObj);
             }
         }
@@ -260,17 +252,19 @@ public class DietLogService {
         List<DailyDietSummaryResponseDto.GutHealthAnalysis.NutrientComparison> comparisons = new ArrayList<>();
         int exceededCount = 0;
 
-        Map<String, Float> dailyIntakes = new HashMap<>();
-        dailyIntakes.put("dietaryFiber", totalNutrientInfo.getTotalDietaryFiber());
-        dailyIntakes.put("probiotics", totalNutrientInfo.getTotalProbiotics());
-        dailyIntakes.put("saturatedFat", totalNutrientInfo.getTotalSaturatedFat());
-        dailyIntakes.put("sugar", totalNutrientInfo.getTotalSugar());
-        dailyIntakes.put("refinedCarbs", totalNutrientInfo.getTotalRefinedCarbs());
+        Map<Nutrient, Float> dailyIntakes = new EnumMap<>(Nutrient.class);
+        dailyIntakes.put(Nutrient.DIETARY_FIBER, totalNutrientInfo.getTotalDietaryFiber());
+        dailyIntakes.put(Nutrient.PROBIOTICS, totalNutrientInfo.getTotalProbiotics());
+        dailyIntakes.put(Nutrient.SATURATED_FAT, totalNutrientInfo.getTotalSaturatedFat());
+        dailyIntakes.put(Nutrient.SUGAR, totalNutrientInfo.getTotalSugar());
+        dailyIntakes.put(Nutrient.REFINED_CARBS, totalNutrientInfo.getTotalRefinedCarbs());
+        dailyIntakes.put(Nutrient.FLOUR, totalNutrientInfo.getTotalFlour());
+
 
         for (GutNutrientStandard standard : standards) {
-            String nutrientName = standard.getNutrient_name();
-            Float minLimit = standard.getMin_limit();
-            Float maxLimit = standard.getMax_limit();
+            Nutrient nutrientName = standard.getNutrientName();
+            Float minLimit = standard.getMinLimit();
+            Float maxLimit = standard.getMaxLimit();
             Float dailyIntake = dailyIntakes.getOrDefault(nutrientName, 0.0f);
 
             NutrientStatus status;
@@ -303,8 +297,6 @@ public class DietLogService {
         OverallGutHealthStatus overallStatus;
         if (exceededCount >= 4) {
             overallStatus = OverallGutHealthStatus.BAD;
-        } else if (exceededCount >= 1) {
-            overallStatus = OverallGutHealthStatus.NORMAL;
         } else {
             overallStatus = OverallGutHealthStatus.GOOD;
         }

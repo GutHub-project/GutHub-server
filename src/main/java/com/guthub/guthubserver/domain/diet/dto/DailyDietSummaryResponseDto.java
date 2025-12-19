@@ -1,6 +1,7 @@
 package com.guthub.guthubserver.domain.diet.dto;
 
 import com.guthub.guthubserver.domain.diet.entity.MealType;
+import com.guthub.guthubserver.domain.gut.entity.Nutrient; // Nutrient import 추가
 import com.guthub.guthubserver.domain.gut.entity.OverallGutHealthStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,7 +39,7 @@ public class DailyDietSummaryResponseDto {
         @Getter
         @Builder
         public static class NutrientComparison {
-            private String nutrientName;
+            private Nutrient nutrientName; // String에서 Nutrient Enum으로 변경
             private float dailyIntake;
             private Float minLimit;
             private Float maxLimit;

@@ -19,9 +19,13 @@ public class GutNutrientStandard extends BaseEntity {
     @JoinColumn(name = "gut_type_id")
     private GutType gutType;
 
-    private String nutrient_name; // 영양소 이름
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nutrient_name")
+    private Nutrient nutrientName; // String에서 Nutrient Enum으로 변경
 
-    private Float max_limit; // 최대 섭취 허용량 (FLOAT)
+    @Column(name = "max_limit")
+    private Float maxLimit; // max_limit으로 변경
 
-    private Float min_limit; // 최소 섭취 권장량 (FLOAT)
+    @Column(name = "min_limit")
+    private Float minLimit; // min_limit으로 변경
 }
