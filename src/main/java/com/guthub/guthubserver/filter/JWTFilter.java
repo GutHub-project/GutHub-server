@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class JWTFilter extends OncePerRequestFilter {
 
+    private static final String BEARER_PREFIX = "Bearer ";
     private final JWTUtil jwtUtil;
 
 
@@ -26,15 +26,19 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
+        // CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
 
 
-        // /logout 경로에 대한 요청은 JWT 검증을 건너뛴다.
+        // logout 경로에 대한 요청은 JWT 검증을 건너뛴다.
         if (request.getRequestURI().equals("/logout")) {
             filterChain.doFilter(request, response);
             return;
@@ -42,37 +46,34 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String authorization = request.getHeader("Authorization");
 
-        if (authorization == null) {
+        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
-        }
-
-        if (!authorization.startsWith("Bearer ")) {
-            throw new ServletException("Invalid JWT token");
         }
 
         // 토큰 파싱
-        String accessToken = authorization.split(" ")[1];
+        String accessToken = authorization.substring(BEARER_PREFIX.length());
 
-        if (jwtUtil.isValid(accessToken, true)) {
-            String username = jwtUtil.getUsername(accessToken);
-            String role = jwtUtil.getRole(accessToken);
-
-            // UserDetailsService를 사용하여 UserDetails를 로드하는 부분 제거
-            // UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
-
-            // UsernamePasswordAuthenticationToken의 principal로 username (String)을 설정
-            Authentication auth = new UsernamePasswordAuthenticationToken(username, null, authorities); // userDetails 대신 username 사용
-            SecurityContextHolder.getContext().setAuthentication(auth);
-
-            filterChain.doFilter(request, response);
-        } else {
+        // access 토큰만 허용
+        if (!jwtUtil.isValid(accessToken, true)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\":\"토큰 만료 또는 유효하지 않은 토큰\"}");
             return;
         }
+
+        String username = jwtUtil.getUsername(accessToken);
+        String role = jwtUtil.getRole(accessToken); // "TEMP" | "USER"
+
+        List<GrantedAuthority> authorities =
+                List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(
+                        username,
+                        null,
+                        authorities
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        filterChain.doFilter(request, response);
     }
 }

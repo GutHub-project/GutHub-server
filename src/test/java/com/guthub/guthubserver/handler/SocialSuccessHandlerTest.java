@@ -66,7 +66,7 @@ class SocialSuccessHandlerTest {
         when(userRepository.findByUsernameAndIsLock(username, false))
                 .thenReturn(Optional.empty());
 
-        when(jwtUtil.createJWT(username, "ROLE_TEMP", true))
+        when(jwtUtil.createJWT(username, "TEMP", true))
                 .thenReturn("temp.jwt.token");
 
         // when
@@ -81,7 +81,7 @@ class SocialSuccessHandlerTest {
                 .startsWith(FRONTEND_URL + "/profile-setup")
                 .contains("tempToken=temp.jwt.token");
 
-        verify(jwtUtil).createJWT(username, "ROLE_TEMP", true);
+        verify(jwtUtil).createJWT(username, "TEMP", true);
         verify(jwtService, never()).addRefresh(any(), any());
     }
 

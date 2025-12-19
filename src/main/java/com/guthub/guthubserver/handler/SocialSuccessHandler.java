@@ -59,12 +59,13 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
     private void handleNewUserRedirect(HttpServletResponse response, String username) throws IOException {
         log.info("프로필 설정이 필요합니다. 프로필 설정 페이지로 리디렉션합니다. username: {}", username);
 
-        // 프로필 설정을 위한 임시 토큰 발급 (TEMP 권한, 10분)
-        String tempToken = jwtUtil.createJWT(username, "ROLE_TEMP", true); // 역할을 "TEMP"로 변경
+        // 프로필 설정을 위한 임시 토큰 발급 (TEMP 권한)
+        String tempToken = jwtUtil.createJWT(username, "TEMP", true);
 
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/profile-setup")
                 .queryParam("tempToken", tempToken)
-                .build().toUriString();
+                .build()
+                .toUriString();
 
         response.sendRedirect(redirectUrl);
     }
