@@ -88,8 +88,8 @@ public class DevSecurityConfig {
                         "/swagger-ui/**",
                         "/v3/api-docs/**"
                 ).permitAll()
-
-                .requestMatchers("/user/profile").hasAnyRole("TEMP", "USER")
+                .requestMatchers("/auth/signup/complete").hasRole("TEMP")
+                .requestMatchers("/user/profile").hasAnyRole( "USER")
                 .requestMatchers("/api/**").hasRole("USER")
 
                 .anyRequest().authenticated()

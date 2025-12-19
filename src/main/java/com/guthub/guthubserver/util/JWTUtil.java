@@ -3,6 +3,7 @@ package com.guthub.guthubserver.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import javax.crypto.SecretKey;
@@ -66,5 +67,14 @@ public class JWTUtil {
                 .expiration(new Date(now + expiry))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public Cookie createCookie(String key, String value) {
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24 * 60 * 60); // 쿠키 유효 기간: 24시간
+        // cookie.setSecure(true); // HTTPS 환경에서만 쿠키 전송
+        cookie.setPath("/"); // 쿠키가 전송될 경로
+        cookie.setHttpOnly(true); // JavaScript에서 쿠키 접근 불가
+        return cookie;
     }
 }

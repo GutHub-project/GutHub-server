@@ -57,31 +57,31 @@ INSERT INTO diet_logs (id, user_id, food_id, log_date, amount, meal_type) VALUES
 -- GutNutrientStandard 테스트 데이터
 INSERT INTO gut_nutrient_standards (id, gut_type_id, nutrient_name, min_limit, max_limit) VALUES
 -- GUT-001: 가스,복부팽만형 (id 1)
-(401, 1, 'dietaryFiber', 25.0, NULL),
-(402, 1, 'probiotics', 10.0, NULL),
-(403, 1, 'saturatedFat', NULL, 15.0),
-(404, 1, 'sugar', NULL, 25.0),
-(405, 1, 'refinedCarbs', NULL, 50.0),
-(406, 1, 'flour', NULL, 30.0),
+(401, 1, 'DIETARY_FIBER', 25.0, NULL),
+(402, 1, 'PROBIOTICS', 10.0, NULL),
+(403, 1, 'SATURATED_FAT', NULL, 15.0),
+(404, 1, 'SUGAR', NULL, 25.0),
+(405, 1, 'REFINED_CARBS', NULL, 50.0),
+(406, 1, 'FLOUR', NULL, 30.0),
 
 -- GUT-002: 변비형 (id 2)
-(407, 2, 'dietaryFiber', 30.0, NULL),
-(408, 2, 'probiotics', 15.0, NULL),
-(409, 2, 'sugar', NULL, 20.0),
-(410, 2, 'refinedCarbs', NULL, 60.0),
+(407, 2, 'DIETARY_FIBER', 30.0, NULL),
+(408, 2, 'PROBIOTICS', 15.0, NULL),
+(409, 2, 'SUGAR', NULL, 20.0),
+(410, 2, 'REFINED_CARBS', NULL, 60.0),
 
 -- GUT-003: 설사형 (id 3)
-(411, 3, 'dietaryFiber', 20.0, NULL),
-(412, 3, 'saturatedFat', NULL, 10.0),
-(413, 3, 'sugar', NULL, 30.0),
-(414, 3, 'probiotics', 5.0, NULL),
+(411, 3, 'DIETARY_FIBER', 20.0, NULL),
+(412, 3, 'SATURATED_FAT', NULL, 10.0),
+(413, 3, 'SUGAR', NULL, 30.0),
+(414, 3, 'PROBIOTICS', 5.0, NULL),
 
 -- GUT-004: 건강형 (id 4)
-(415, 4, 'dietaryFiber', 25.0, 40.0),
-(416, 4, 'probiotics', 10.0, 30.0),
-(417, 4, 'saturatedFat', NULL, 20.0),
-(418, 4, 'sugar', NULL, 35.0),
-(419, 4, 'refinedCarbs', NULL, 70.0);
+(415, 4, 'DIETARY_FIBER', 25.0, 40.0),
+(416, 4, 'PROBIOTICS', 10.0, 30.0),
+(417, 4, 'SATURATED_FAT', NULL, 20.0),
+(418, 4, 'SUGAR', NULL, 35.0),
+(419, 4, 'REFINED_CARBS', NULL, 70.0);
 
 -- DailyGutHealthScore 테스트 데이터
 -- testuser1 (id 101)

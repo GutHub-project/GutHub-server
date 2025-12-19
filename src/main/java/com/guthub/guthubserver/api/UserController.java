@@ -1,17 +1,18 @@
 package com.guthub.guthubserver.api;
 
-import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
+import com.guthub.guthubserver.domain.jwt.dto.AccessTokenResponseDto;
 import com.guthub.guthubserver.domain.user.dto.ProfileResponseDto;
+import com.guthub.guthubserver.domain.user.dto.ProfileUpdateDto;
 import com.guthub.guthubserver.domain.user.dto.UserRequestDTO;
 import com.guthub.guthubserver.domain.user.dto.UserResponseDTO;
 import com.guthub.guthubserver.domain.user.service.UserService;
 import com.guthub.guthubserver.global.dto.ApiResponse;
+import com.guthub.guthubserver.global.util.CookieUtil;
+import com.guthub.guthubserver.util.JWTUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -32,9 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
+    private final JWTUtil jwtUtil;
+    public UserController(UserService userService, JWTUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
+
     }
 
 
@@ -99,4 +102,23 @@ public class UserController {
         ProfileResponseDto userProfile = userService.readUserProfile();
         return ResponseEntity.ok(ApiResponse.of("SUCCESS", "내 프로필 정보 조회 성공", userProfile));
     }
+
+    // 신규 소셜 회원 가입 완료 엔드포인트 추가
+    @PostMapping(value = "/auth/signup/complete", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "소셜 회원 가입 완료", description = "소셜 로그인 후 추가 정보를 입력하여 회원가입을 완료하고 정식 Access Token을 발급받습니다.")
+    public ResponseEntity<ApiResponse<AccessTokenResponseDto>>completeSocialSignUp(
+            @Validated @RequestBody ProfileUpdateDto dto,
+            HttpServletResponse response
+    ) {
+        Long id = userService.updateProfile(dto);
+
+        String accessToken = jwtUtil.createJWT("access", "USER", true);
+        String refreshToken = jwtUtil.createJWT("refresh", "USER", false);
+
+        // 4. Refresh Token을 쿠키에 담기
+        CookieUtil.addRefreshTokenCookie(response,refreshToken);
+        AccessTokenResponseDto tokenDto = new AccessTokenResponseDto(accessToken);
+        return ResponseEntity.ok(ApiResponse.of("SUCCESS", "회원가입이 완료되었습니다.", tokenDto));
+    }
 }
+

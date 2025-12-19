@@ -7,6 +7,7 @@ import com.guthub.guthubserver.filter.LoginFilter;
 import com.guthub.guthubserver.handler.RefreshTokenLogoutHandler;
 import com.guthub.guthubserver.util.JWTUtil;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,31 +35,25 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
-@Profile("prod") // "!local"에서 "prod"로 변경
+@RequiredArgsConstructor
+@Profile("prod")
 public class SecurityConfig {
 
-    private final AuthenticationConfiguration authenticationConfiguration;
-    private final AuthenticationSuccessHandler loginSuccessHandler;
-    private final AuthenticationSuccessHandler socialSuccessHandler;
-    private final JwtService jwtService;
     private final JWTUtil jwtUtil;
-    // private final UserDetailsService userDetailsService; // 제거
-    private final String frontendUrl;
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtService jwtService;
+    @Qualifier("SocialSuccessHandler")
+    private final AuthenticationSuccessHandler socialSuccessHandler;
+    @Qualifier("LoginSuccessHandler")
+    private final AuthenticationSuccessHandler loginSuccessHandler;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
-                          @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
-                          @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler,
-                          JwtService jwtService, JWTUtil jwtUtil, // UserDetailsService 인자 제거
-                          @Value("${frontend.url") String frontendUrl) {
-        this.authenticationConfiguration = authenticationConfiguration;
-        this.loginSuccessHandler = loginSuccessHandler;
-        this.socialSuccessHandler = socialSuccessHandler;
-        this.jwtService = jwtService;
-        this.jwtUtil = jwtUtil;
-        // this.userDetailsService = userDetailsService; // 제거
-        this.frontendUrl = frontendUrl;
+    @Bean
+    public JWTFilter jwtFilter() {
+        return new JWTFilter(jwtUtil);
     }
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -79,62 +74,67 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
-    @Bean
-    public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.withRolePrefix("ROLE_")
-                .role(UserRoleType.ADMIN.name()).implies(UserRoleType.USER.name())
-                .build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        http.formLogin(AbstractHttpConfigurer::disable);
-        http.httpBasic(AbstractHttpConfigurer::disable);
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                );
 
-        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
-
-        http.oauth2Login(oauth2 -> oauth2.successHandler(socialSuccessHandler));
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
+                        "/test/token",
+                        "/login/**",
+                        "/oauth2/**",
                         "/user",
                         "/user/exist",
                         "/jwt/refresh",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/logout"
+                        "/v3/api-docs/**"
                 ).permitAll()
+
+                .requestMatchers("/user/profile").hasAnyRole("TEMP", "USER")
+                .requestMatchers("/api/**").hasRole("USER")
+
                 .anyRequest().authenticated()
         );
 
-
-        http.sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .sessionFixation().migrateSession()
+        http.oauth2Login(oauth2 ->
+                oauth2.successHandler(socialSuccessHandler)
         );
 
-        http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.web.authentication.logout.LogoutFilter.class); // userDetailsService 전달 부분 제거
+        http.addFilterBefore(
+                jwtFilter(),
+                UsernamePasswordAuthenticationFilter.class
+        );
+
+        http.addFilterBefore(
+                new LoginFilter(
+                        authenticationManager(authenticationConfiguration),
+                        loginSuccessHandler
+                ),
+                UsernamePasswordAuthenticationFilter.class
+        );
+
         http.logout(logout -> logout
                 .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtUtil))
                 .logoutSuccessHandler((request, response, authentication) -> {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Logout successful");
-                    response.getWriter().flush();
                 })
         );
+
         http.exceptionHandling(e -> e
-                .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-                .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))
+                .authenticationEntryPoint((req, res, ex) ->
+                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                )
+                .accessDeniedHandler((req, res, ex) ->
+                        res.sendError(HttpServletResponse.SC_FORBIDDEN)
+                )
         );
 
         return http.build();

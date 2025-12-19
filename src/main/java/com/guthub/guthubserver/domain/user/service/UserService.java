@@ -8,6 +8,7 @@ import com.guthub.guthubserver.domain.user.entity.SocialProviderType;
 import com.guthub.guthubserver.domain.user.entity.UserEntity;
 import com.guthub.guthubserver.domain.user.entity.UserRoleType;
 import com.guthub.guthubserver.domain.user.repository.UserRepository;
+import com.guthub.guthubserver.util.JWTUtil; // JWTUtil import 추가
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,12 +37,14 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final GutTypeRepository gutTypeRepository;
+    private final JWTUtil jwtUtil; // JWTUtil 주입 추가
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, JwtService jwtService, GutTypeRepository gutTypeRepository) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, JwtService jwtService, GutTypeRepository gutTypeRepository, JWTUtil jwtUtil) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.gutTypeRepository = gutTypeRepository;
+        this.jwtUtil = jwtUtil; // JWTUtil 초기화
     }
 
     @Transactional
@@ -192,5 +195,24 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         UserEntity entity = userRepository.findByUsernameAndIsLock(username, false)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다: " + username));
         return new UserResponseDTO(username, entity.getIsSocial(), entity.getNickname(), entity.getEmail());
+    }
+
+    @Transactional
+    public String completeSocialSignUp( ProfileUpdateDto dto) {
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        UserEntity userEntity = userRepository.findByUsernameAndIsLock(username, false)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        GutType gutType = gutTypeRepository.findByName(dto.gutType())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장 건강 타입입니다: " + dto.gutType()));
+
+        userEntity.updateProfile(dto, gutType);
+
+        userEntity.promoteToUser(); // TEMP -> USER 역할로 승격
+
+        // 3. 새로운 정식 Access Token 생성 및 반환
+        return jwtUtil.createJWT(userEntity.getUsername(), userEntity.getRoleType().name(), true);
     }
 }
