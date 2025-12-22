@@ -53,7 +53,8 @@ public class DietLogService {
         List<DietLog> savedDietLogs = requestDto.getItems().stream()
                 .map(itemDto -> {
                     Food food = foodRepository.findByName(itemDto.getFoodName())
-                            .orElseThrow(() -> new IllegalArgumentException("Food not found: " + itemDto.getFoodName()));
+                            .orElseThrow(
+                                    () -> new IllegalArgumentException("Food not found: " + itemDto.getFoodName()));
 
                     DietLog dietLog = DietLog.builder()
                             .user(user)
@@ -87,7 +88,8 @@ public class DietLogService {
                 .collect(Collectors.groupingBy(DietLogResponseDto::getMealType));
 
         DailyDietSummaryResponseDto.TotalNutrientInfo totalNutrientInfo = calculateTotalNutrients(dietLogs);
-        DailyDietSummaryResponseDto.GutHealthAnalysis gutHealthAnalysis = analyzeGutHealth(user.getGutType(), totalNutrientInfo);
+        DailyDietSummaryResponseDto.GutHealthAnalysis gutHealthAnalysis = analyzeGutHealth(user.getGutType(),
+                totalNutrientInfo);
 
         return DailyDietSummaryResponseDto.builder()
                 .date(date)
@@ -206,21 +208,39 @@ public class DietLogService {
     public void updateDailyGutHealthScore(UserEntity user, LocalDate date) {
         List<DietLog> dietLogs = dietLogRepository.findAllByUserAndLogDate(user, date);
         DailyDietSummaryResponseDto.TotalNutrientInfo totalNutrientInfo = calculateTotalNutrients(dietLogs);
-        DailyDietSummaryResponseDto.GutHealthAnalysis gutHealthAnalysis = analyzeGutHealth(user.getGutType(), totalNutrientInfo);
+        DailyDietSummaryResponseDto.GutHealthAnalysis gutHealthAnalysis = analyzeGutHealth(user.getGutType(),
+                totalNutrientInfo);
+
+        // badCount와 violationReason 계산
+        int badCountTemp = 0;
+        List<String> violatedNutrients = new ArrayList<>();
+        for (DailyDietSummaryResponseDto.GutHealthAnalysis.NutrientComparison comparison : gutHealthAnalysis
+                .getComparisons()) {
+            if (comparison.isExceeded()) {
+                badCountTemp++;
+                violatedNutrients.add(comparison.getNutrientName() + " 초과");
+            } else if (comparison.isBelowMin()) {
+                badCountTemp++;
+                violatedNutrients.add(comparison.getNutrientName() + " 부족");
+            }
+        }
+        final int badCount = badCountTemp;
+        final String violationReason = violatedNutrients.isEmpty() ? null : String.join(", ", violatedNutrients);
 
         dailyGutHealthScoreRepository.findByUserAndRecordDate(user, date)
                 .ifPresentOrElse(
-                        score -> score.updateOverallStatus(gutHealthAnalysis.getOverallStatus()),
+                        score -> score.updateScore(gutHealthAnalysis.getOverallStatus(), badCount, violationReason),
                         () -> {
                             DailyGutHealthScore newScore = DailyGutHealthScore.builder()
                                     .user(user)
                                     .recordDate(date)
                                     .overallStatus(gutHealthAnalysis.getOverallStatus())
+                                    .badCount(badCount)
+                                    .violationReason(violationReason)
                                     .build();
                             dailyGutHealthScoreRepository.save(newScore);
                         });
     }
-
 
     private DailyDietSummaryResponseDto.TotalNutrientInfo calculateTotalNutrients(List<DietLog> dietLogs) {
         float totalCalories = 0;
@@ -255,7 +275,8 @@ public class DietLogService {
                 .build();
     }
 
-    private DailyDietSummaryResponseDto.GutHealthAnalysis analyzeGutHealth(GutType userGutType, DailyDietSummaryResponseDto.TotalNutrientInfo totalNutrientInfo) {
+    private DailyDietSummaryResponseDto.GutHealthAnalysis analyzeGutHealth(GutType userGutType,
+            DailyDietSummaryResponseDto.TotalNutrientInfo totalNutrientInfo) {
         List<GutNutrientStandard> standards = gutNutrientStandardRepository.findByGutType(userGutType);
         List<DailyDietSummaryResponseDto.GutHealthAnalysis.NutrientComparison> comparisons = new ArrayList<>();
         int exceededCount = 0;

@@ -21,10 +21,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "daily_gut_health_scores", uniqueConstraints = { // uniqueConstraints 추가
-    @UniqueConstraint(
-        name = "uk_user_record_date",
-        columnNames = {"user_id", "record_date"}
-    )
+        @UniqueConstraint(name = "uk_user_record_date", columnNames = { "user_id", "record_date" })
 })
 @Getter
 @Builder
@@ -43,7 +40,23 @@ public class DailyGutHealthScore extends BaseEntity {
     @Column(name = "overall_status", nullable = false, length = 20)
     private OverallGutHealthStatus overallStatus;
 
+    @Column(name = "bad_count")
+    private Integer badCount;
+
+    @Column(name = "violation_reason")
+    private String violationReason;
+
+    @org.hibernate.annotations.UpdateTimestamp
+    @Column(name = "updated_at")
+    private java.time.LocalDateTime updatedAt;
+
     public void updateOverallStatus(OverallGutHealthStatus overallStatus) {
         this.overallStatus = overallStatus;
+    }
+
+    public void updateScore(OverallGutHealthStatus overallStatus, Integer badCount, String violationReason) {
+        this.overallStatus = overallStatus;
+        this.badCount = badCount;
+        this.violationReason = violationReason;
     }
 }
