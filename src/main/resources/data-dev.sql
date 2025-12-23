@@ -86,18 +86,18 @@ INSERT INTO gut_nutrient_standards (id, gut_type_id, nutrient_name, min_limit, m
 
 -- DailyGutHealthScore 테스트 데이터
 -- testuser1 (id 101)
-INSERT INTO daily_gut_health_scores (id, user_id, record_date, overall_status) VALUES
-(501, 101, CURRENT_DATE(), 'GOOD'),
-(502, 101, CURRENT_DATE() - 1, 'GOOD'),
-(503, 101, CURRENT_DATE() - 2, 'BAD'),
-(504, 101, CURRENT_DATE() - 3, 'NORMAL'),
-(505, 101, CURRENT_DATE() - 4, 'GOOD'),
-(506, 101, CURRENT_DATE() - 5, 'GOOD'),
-(507, 101, CURRENT_DATE() - 6, 'NORMAL');
+INSERT INTO daily_gut_health_scores (id, user_id, record_date, overall_status, bad_count, violation_reason, updated_at) VALUES
+(501, 101, CURRENT_DATE(), 'GOOD', 0, NULL, CURRENT_TIMESTAMP()),
+(502, 101, CURRENT_DATE() - 1, 'GOOD', 0, NULL, CURRENT_TIMESTAMP()),
+(503, 101, CURRENT_DATE() - 2, 'BAD', 5, '포화지방, 정제탄수화물, 설탕, 밀가루, 식이섬유 기준 초과', CURRENT_TIMESTAMP()),
+(504, 101, CURRENT_DATE() - 3, 'NORMAL', 2, '식이섬유 부족, 설탕 초과', CURRENT_TIMESTAMP()),
+(505, 101, CURRENT_DATE() - 4, 'GOOD', 0, NULL, CURRENT_TIMESTAMP()),
+(506, 101, CURRENT_DATE() - 5, 'GOOD', 0, NULL, CURRENT_TIMESTAMP()),
+(507, 101, CURRENT_DATE() - 6, 'NORMAL', 1, '프로바이오틱스 부족', CURRENT_TIMESTAMP());
 
 -- testuser2 (id 102)
-INSERT INTO daily_gut_health_scores (id, user_id, record_date, overall_status) VALUES
-(508, 102, CURRENT_DATE(), 'GOOD'),
-(509, 102, CURRENT_DATE() - 1, 'BAD'),
-(510, 102, CURRENT_DATE() - 2, 'NORMAL'),
-(511, 102, CURRENT_DATE() - 3, 'GOOD');
+INSERT INTO daily_gut_health_scores (id, user_id, record_date, overall_status, bad_count, violation_reason, updated_at) VALUES
+(508, 102, CURRENT_DATE(), 'GOOD', 0, NULL, CURRENT_TIMESTAMP()),
+(509, 102, CURRENT_DATE() - 1, 'BAD', 4, '포화지방, 정제탄수화물, 밀가루, 식이섬유 기준 초과', CURRENT_TIMESTAMP()),
+(510, 102, CURRENT_DATE() - 2, 'NORMAL', 1, '설탕 초과', CURRENT_TIMESTAMP()),
+(511, 102, CURRENT_DATE() - 3, 'GOOD', 0, NULL, CURRENT_TIMESTAMP());

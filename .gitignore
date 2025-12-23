@@ -38,3 +38,5 @@ out/
 
 # 로컬 설정 파일 제외
 application-local.yml
+
+.antigravityrules
