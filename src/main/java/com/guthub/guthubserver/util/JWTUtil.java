@@ -1,6 +1,7 @@
 package com.guthub.guthubserver.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
@@ -30,6 +31,18 @@ public class JWTUtil {
     // JWT 클레임 role 파싱
     public String getRole(String token) {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+    }
+
+    // 토큰 만료 여부 확인
+    public Boolean isExpired(String token) {
+        try {
+            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+            return false;
+        } catch (ExpiredJwtException e) {
+            return true;
+        } catch (Exception e) {
+            return false; // 만료 외의 다른 에러는 만료가 아님
+        }
     }
 
     // JWT 유효 여부 (위조, 시간, Access/Refres 여부)
