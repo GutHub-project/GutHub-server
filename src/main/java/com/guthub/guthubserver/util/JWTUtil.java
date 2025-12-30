@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class JWTUtil {
 
     private final SecretKey secretKey;
-    private final Long accessTokenExpiresIn = 86400L * 1000;
+    private final Long accessTokenExpiresIn = 180L * 1000;
     private final Long refreshTokenExpiresIn = 604800L * 1000;
 
     public JWTUtil(@Value("${jwt.secret.key}") String secretKeyString) {
