@@ -101,3 +101,40 @@ INSERT INTO daily_gut_health_scores (id, user_id, record_date, overall_status, b
 (509, 102, CURRENT_DATE() - 1, 'BAD', 4, '포화지방, 정제탄수화물, 밀가루, 식이섬유 기준 초과', CURRENT_TIMESTAMP()),
 (510, 102, CURRENT_DATE() - 2, 'NORMAL', 1, '설탕 초과', CURRENT_TIMESTAMP()),
 (511, 102, CURRENT_DATE() - 3, 'GOOD', 0, NULL, CURRENT_TIMESTAMP());
+
+-- Ingredient 테스트 데이터
+INSERT INTO ingredients (id, name) VALUES
+(601, '비타민C'),
+(602, '비타민D'),
+(603, '프로바이오틱스'),
+(604, '아연'),
+(605, '마그네슘'),
+(606, '오메가3'),
+(607, '밀크씨슬'),
+(608, '루테인');
+
+-- Supplement 테스트 데이터
+INSERT INTO supplements (id, name, brand, price, image_url, description, purchase_url, capacity, review_count, rating_average) VALUES
+(701, '슈퍼 유산균 골드', '건강나라', 35000, 'http://example.com/supplements/701.png', '장 건강에 도움을 줄 수 있는 100억 유산균', 'http://shop.com/701', 60, 2, 4.5),
+(702, '데일리 비타민C 1000', '비타민월드', 15000, 'http://example.com/supplements/702.png', '활력 넘치는 하루를 위한 고함량 비타민C', 'http://shop.com/702', 120, 1, 5.0),
+(703, '눈 건강 루테인 지아잔틴', '아이케어', 28000, 'http://example.com/supplements/703.png', '침침한 눈을 밝게, 황반색소 밀도 유지', 'http://shop.com/703', 30, 0, 0.0),
+(704, '간편한 밀크씨슬', '리버가드', 22000, 'http://example.com/supplements/704.png', '지친 간을 위한 하루 한 알', 'http://shop.com/704', 60, 0, 0.0),
+(705, '프리미엄 오메가3', '오션라이프', 45000, 'http://example.com/supplements/705.png', '혈행 개선과 건조한 눈 개선에 도움', 'http://shop.com/705', 90, 0, 0.0);
+
+-- SupplementIngredient 연결 데이터
+INSERT INTO supplement_ingredients (id, supplement_id, ingredient_id) VALUES
+(801, 701, 603), -- 슈퍼 유산균 골드 - 프로바이오틱스
+(802, 701, 604), -- 슈퍼 유산균 골드 - 아연
+(803, 702, 601), -- 데일리 비타민C - 비타민C
+(804, 703, 608), -- 눈 건강 루테인 - 루테인
+(805, 703, 601), -- 눈 건강 루테인 - 비타민C (부원료)
+(806, 704, 607), -- 간편한 밀크씨슬 - 밀크씨슬
+(807, 704, 602), -- 간편한 밀크씨슬 - 비타민D
+(808, 705, 606), -- 프리미엄 오메가3 - 오메가3
+(809, 705, 602); -- 프리미엄 오메가3 - 비타민D
+
+-- Review 테스트 데이터
+INSERT INTO reviews (id, user_id, supplement_id, rating, delivery_rating, content, created_at, updated_at) VALUES
+(901, 101, 701, 5, 5, '배송도 빠르고 효과도 좋은 것 같아요. 화장실 가기 편해졌습니다.', CURRENT_TIMESTAMP() - INTERVAL '2' DAY, CURRENT_TIMESTAMP()),
+(902, 102, 701, 4, 4, '가격 대비 괜찮은 제품입니다. 꾸준히 먹어보려구요.', CURRENT_TIMESTAMP() - INTERVAL '1' DAY, CURRENT_TIMESTAMP()),
+(903, 101, 702, 5, 5, '피로가 좀 덜한 느낌이에요. 알약 크기도 적당합니다.', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());

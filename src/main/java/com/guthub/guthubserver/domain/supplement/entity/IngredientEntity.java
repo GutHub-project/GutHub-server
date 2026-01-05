@@ -1,9 +1,7 @@
 package com.guthub.guthubserver.domain.supplement.entity;
 
 import com.guthub.guthubserver.global.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,12 +10,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "Ingredients")
+@Table(name = "ingredients")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class IngredientEntity extends BaseEntity {
 
-    String name;
+    @Column(nullable = false, unique = true)
+    private String name;
 }

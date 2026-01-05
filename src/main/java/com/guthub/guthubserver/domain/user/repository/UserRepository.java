@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     void deleteByUsername(String username);
 
     Optional<UserEntity> findByUsernameAndIsLock(String username, Boolean isLock);
+
+    Optional<UserEntity> findByUsername(String username);
 }
