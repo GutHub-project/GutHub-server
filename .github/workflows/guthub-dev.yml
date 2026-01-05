@@ -87,7 +87,11 @@ jobs:
             docker stop guthub-server || true
             docker rm guthub-server || true
 
-            docker run -d --name guthub-server -p 8080:8080 \
+            docker run -d \
+            --name guthub-server \
+            --restart unless-stopped \
+            --network app-network \
+            -p 8080:8080 \
             -e "SPRING_PROFILES_ACTIVE=dev" \
             -e "SERVER_DOMAIN=${{ secrets.SERVER_DOMAIN }}" \
             -e "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
@@ -105,6 +109,8 @@ jobs:
             \
             -e "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" \
             -e "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" \
+            \
+            -e "SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200 \
             \
             moset1/guthub-server:${{ github.sha }}
 

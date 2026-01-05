@@ -32,6 +32,13 @@ spring:
       mode: always
       encoding: UTF-8
       data-locations: classpath:data-local.sql
+
+
+  # Elasticsearch 설정 추가
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
+    connection-timeout: 5s
+    socket-timeout: 3s
   # --- 나머지 설정 (OAuth, JWT 등) ---
   security:
     oauth2:

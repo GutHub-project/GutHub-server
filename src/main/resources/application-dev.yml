@@ -20,6 +20,12 @@ spring:
     # 데이터 초기화 스크립트가 ddl-auto 이후에 실행되도록 보장
     defer-datasource-initialization: true
 
+  # Elasticsearch 설정 추가
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://elasticsearch:9200}
+    connection-timeout: 5s
+    socket-timeout: 3s
+
   # data-dev.sql 스크립트를 사용하도록 설정
   sql:
     init:

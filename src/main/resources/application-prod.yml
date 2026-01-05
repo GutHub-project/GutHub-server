@@ -17,6 +17,12 @@ spring:
       hibernate:
         format_sql: false
 
+  # Elasticsearch 설정 추가
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://elasticsearch:9200}
+    connection-timeout: 5s
+    socket-timeout: 3s
+
   security:
     oauth2:
       client:
