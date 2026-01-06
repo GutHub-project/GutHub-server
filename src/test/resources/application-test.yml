@@ -45,6 +45,12 @@ spring:
               - email
               - profile
           # Naver, Kakao 등 다른 OAuth 설정도 필요에 따라 유지하거나 제거할 수 있습니다.
+  # Elasticsearch 설정 추가
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
+    connection-timeout: 5s
+    socket-timeout: 3s
+    enabled: false # Ensure Elasticsearch is disabled in test profile
 
 # 프론트엔드 URL 설정
 frontend:

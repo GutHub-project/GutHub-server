@@ -5,12 +5,13 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 @Component
 public class JWTUtil {
@@ -19,7 +20,8 @@ public class JWTUtil {
     private final Long accessTokenExpiresIn = 86400L * 1000;
     private final Long refreshTokenExpiresIn = 604800L * 1000;
 
-    public JWTUtil(@Value("${jwt.secret.key}") String secretKeyString) {
+
+    public JWTUtil(@Value("${jwt.secret.key:default-test-secret-key}") String secretKeyString) {
         this.secretKey = new SecretKeySpec(secretKeyString.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 

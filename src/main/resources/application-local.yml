@@ -39,6 +39,8 @@ spring:
     uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
     connection-timeout: 5s
     socket-timeout: 3s
+
+
   # --- 나머지 설정 (OAuth, JWT 등) ---
   security:
     oauth2:

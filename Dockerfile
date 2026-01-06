@@ -7,6 +7,7 @@ RUN chmod +x gradlew
 
 RUN ./gradlew clean bootJar -x test
 
+
 # runtime stage
 FROM eclipse-temurin:25-jre
 WORKDIR /app
