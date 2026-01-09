@@ -41,15 +41,7 @@ public class ProductSearchService {
         NativeQuery query = buildSearchQuery(keyword, searchAfterValues);
 
         // 검색 실행
-        SearchHits<SupplementDocument> searchHits;
-        try {
-            searchHits = elasticsearchOperations.search(query, SupplementDocument.class);
-        } catch (Exception e) {
-            log.error("ES 검색 중 오류 발생. 원인: {}", e.getMessage());
-            log.error("상세 원인 (Cause): {}", e.getCause() != null ? e.getCause().toString() : "없음");
-            log.error("전체 스택트레이스:", e);
-            throw e;
-        }
+        SearchHits<SupplementDocument> searchHits = elasticsearchOperations.search(query, SupplementDocument.class);
 
         // 결과 변환
         List<SupplementSearchItemDto> items = searchHits.stream()
