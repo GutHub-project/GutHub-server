@@ -4,25 +4,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Document(indexName = "supplements")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SupplementDocument {
 
     @Id
-    private Long id;
+    private String id;
 
     @Field(type = FieldType.Text, analyzer = "nori")
     private String name;
@@ -59,11 +61,11 @@ public class SupplementDocument {
     @Builder.Default
     private Double totalRankingScore = 0.0;
 
-    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
-    private LocalDateTime lastReviewDate; // 제품에 가장 최근 리뷰가 달린 시간
+    @Field(type = FieldType.Date, format = DateFormat.epoch_millis)
+    private Instant lastReviewDate; // 제품에 가장 최근 리뷰가 달린 시간
 
-    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
-    private LocalDateTime updatedAt; // 문서가 마지막으로 배치에서 갱신된 시간
+    @Field(type = FieldType.Date, format = DateFormat.epoch_millis)
+    private Instant updatedAt; // 문서가 마지막으로 배치에서 갱신된 시간
 
     @Getter
     @Builder

@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
                 .status(ErrorCode.USER_NOT_FOUND.getHttpStatus())
                 .body(ApiResponse.of(ErrorCode.USER_NOT_FOUND.getCode(), ex.getMessage()));
     }
-    
+
     // 그 외 모든 예외 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {

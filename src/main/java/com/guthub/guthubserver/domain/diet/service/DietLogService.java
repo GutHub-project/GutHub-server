@@ -38,6 +38,7 @@ public class DietLogService {
     private final DietLogRepository dietLogRepository;
     private final UserRepository userRepository;
     private final FoodRepository foodRepository;
+    private final FoodSearchService foodSearchService;
     private final GutNutrientStandardRepository gutNutrientStandardRepository;
     private final DailyGutHealthScoreRepository dailyGutHealthScoreRepository;
 
@@ -155,8 +156,8 @@ public class DietLogService {
     }
 
     public List<FoodSearchResponseDto> searchFoods(String keyword) {
-        return foodRepository.findByNameContaining(keyword).stream()
-                .map(FoodSearchResponseDto::new)
+        return foodSearchService.searchFoods(keyword).stream()
+                .map(doc -> new FoodSearchResponseDto(doc.getId(), doc.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -280,7 +281,6 @@ public class DietLogService {
         dailyIntakes.put(Nutrient.SUGAR, totalNutrientInfo.getTotalSugar());
         dailyIntakes.put(Nutrient.REFINED_CARBS, totalNutrientInfo.getTotalRefinedCarbs());
         dailyIntakes.put(Nutrient.FLOUR, totalNutrientInfo.getTotalFlour());
-
 
         for (GutNutrientStandard standard : standards) {
             Nutrient nutrientName = standard.getNutrientName();

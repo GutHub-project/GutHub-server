@@ -1,5 +1,6 @@
 package com.guthub.guthubserver.config;
 
+import com.guthub.guthubserver.domain.diet.service.FoodIndexService;
 import com.guthub.guthubserver.domain.jwt.repository.RefreshRepository;
 import com.guthub.guthubserver.domain.supplement.service.SupplementStatsAggregator;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 public class ScheduleConfig {
 
     private final RefreshRepository refreshRepository;
-
     private final SupplementStatsAggregator aggregator;
+    private final FoodIndexService foodIndexService;
 
     // Refresh 토큰 저장소 8일 지난 토큰 삭제
     @Scheduled(cron = "0 0 3 * * *")
@@ -28,5 +29,10 @@ public class ScheduleConfig {
     public void dailyAggregate() {
         aggregator.aggregateAndIndexAll();
     }
-}
 
+    // 매일 02:30에 음식 데이터 Elasticsearch 동기화
+    @Scheduled(cron = "0 30 2 * * *")
+    public void dailyFoodIndex() {
+        foodIndexService.indexAllFoods();
+    }
+}

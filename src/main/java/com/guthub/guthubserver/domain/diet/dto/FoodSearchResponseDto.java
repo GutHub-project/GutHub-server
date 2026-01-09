@@ -12,4 +12,10 @@ public class FoodSearchResponseDto {
         this.id = food.getId();
         this.name = food.getName();
     }
+
+    // Elasticsearch FoodDocument에서 생성하는 생성자
+    public FoodSearchResponseDto(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

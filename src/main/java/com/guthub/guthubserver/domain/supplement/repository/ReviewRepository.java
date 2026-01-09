@@ -24,10 +24,10 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     // --- Batch aggregation queries for scheduler ---
     // Aggregate per supplement (review_count, avg_rating, last_review_at)
-    @Query(value = "SELECT r.supplement_id as supplementId, COUNT(*) as reviewCount, AVG(r.rating) as avgRating, MAX(r.created_at) as lastReviewAt FROM reviews r WHERE r.deleted = false GROUP BY r.supplement_id", nativeQuery = true)
+    @Query(value = "SELECT r.supplement_id as supplementId, COUNT(*) as reviewCount, AVG(r.rating) as avgRating, MAX(r.created_at) as lastReviewAt FROM reviews r GROUP BY r.supplement_id", nativeQuery = true)
     List<SupplementAggregateProjection> aggregatePerSupplementAll();
 
     // Aggregate per supplement + gut type
-    @Query(value = "SELECT r.supplement_id as supplementId, r.gut_type_code as gutTypeCode, COUNT(*) as reviewCount, AVG(r.rating) as avgRating FROM reviews r WHERE r.deleted = false GROUP BY r.supplement_id, r.gut_type_code", nativeQuery = true)
+    @Query(value = "SELECT r.supplement_id as supplementId, r.gut_type_id as gutTypeId, COUNT(*) as reviewCount, AVG(r.rating) as avgRating FROM reviews r GROUP BY r.supplement_id, r.gut_type_id", nativeQuery = true)
     List<SupplementGutAggregateProjection> aggregatePerSupplementByGutAll();
 }

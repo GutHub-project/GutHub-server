@@ -1,5 +1,6 @@
 package com.guthub.guthubserver.domain.supplement.entity;
 
+import com.guthub.guthubserver.domain.gut.entity.GutType;
 import com.guthub.guthubserver.domain.user.entity.UserEntity;
 import com.guthub.guthubserver.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -35,7 +36,11 @@ public class ReviewEntity extends BaseEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    // 리뷰 작성 당시의 사용자 상태를 박제하고 싶다면 아래 필드 추가 고려
-    // private GutType gutTypeSnapshot;
-    // private Integer ageSnapshot;
+    // 리뷰 작성 당시의 사용자 상태 스냅샷
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gut_type_id")
+    private GutType gutTypeSnapshot;
+
+    @Column(name = "age_snapshot")
+    private Integer ageSnapshot;
 }
